@@ -284,4 +284,20 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
     }
   }
 
+  "process" should {
+    "play the game and log the moves" in {
+      val game    = Game(Map(pippo -> 0, pluto -> 0), Board())
+      val update1 = MoveRules.process(game, pippo, 6)
+      val update2 = MoveRules.process(update1.game, pluto, 5)
+      update2.game.playerPositions shouldBe Map(pippo -> 12, pluto -> 10)
+      val log = update1.log ++ update2.log
+      log shouldBe Seq(
+        Advance(pippo, game.board.get(0), game.board.get(6)),
+        Jump(pippo, game.board.get(6), game.board.get(12)),
+        Advance(pluto, game.board.get(0), game.board.get(5)),
+        ExtraMove(Advance(pluto, game.board.get(5), game.board.get(10)))
+      )
+    }
+  }
+
 }
