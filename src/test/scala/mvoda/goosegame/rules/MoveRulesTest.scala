@@ -6,20 +6,19 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class MoveRulesTest extends AnyWordSpec with Matchers {
-  private val board: Board  = Board()
   private val pippo: Player = Player("Pippo")
   private val pluto: Player = Player("Pluto")
 
   "computePlayerMove" should {
     "calculate final position when player does not hit the end of the board" in {
-      val move = MoveRules.computePlayerMove(board, pippo, 0, 10)
+      val move = MoveRules.computePlayerMove(Board(), pippo, 0, 10)
       move shouldBe an[Advance]
       move.start.position shouldBe 0
       move.end.position shouldBe 10
     }
 
     "calculate final position when player does hits the end of the board" in {
-      val move = MoveRules.computePlayerMove(board, pippo, 55, 10)
+      val move = MoveRules.computePlayerMove(Board(), pippo, 55, 10)
       move shouldBe an[Overshot]
       move.start.position shouldBe 55
       move.end.position shouldBe 63
@@ -43,7 +42,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
   }
 
   "updateGame" should {
-    val game          = Game(Map(pippo -> 53), board)
+    val game          = Game(Map(pippo -> 53), Board())
     val initialUpdate = GameUpdate(game, Seq())
 
     "update player positions and log moves" in {
@@ -81,7 +80,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
   }
 
   "processMove" should {
-    val game          = Game(Map(pippo -> 53, pluto -> 55), board)
+    val game          = Game(Map(pippo -> 53, pluto -> 55), Board())
     val initialUpdate = GameUpdate(game, Seq())
 
     "update both the player and prankedPlayer position and log the moves" in {
@@ -102,7 +101,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
     }
 
     "detect end of the game after a swap places the player on the end space" in {
-      val game          = Game(Map(pippo -> 63, pluto -> 60), board)
+      val game          = Game(Map(pippo -> 63, pluto -> 60), Board())
       val initialUpdate = GameUpdate(game, Seq())
       val move          = Bounce(pippo, EmptySpace(63), EmptySpace(60))
       val update        = MoveRules.processMove(initialUpdate, move)
@@ -116,13 +115,12 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
   }
 
   "processMoveChain" should {
-    val game          = Game(Map(pippo -> 0), board)
-    val initialUpdate = GameUpdate(game, Seq())
-
     "bounces back after hitting the end of the board" in {
-      val moveSpaces = 66
-      val move       = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
-      val update     = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
+      val game          = Game(Map(pippo -> 0), Board())
+      val initialUpdate = GameUpdate(game, Seq())
+      val moveSpaces    = 66
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 60)
       update.log.size shouldBe 2
       update.log shouldBe Seq(
@@ -132,9 +130,11 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
     }
 
     "jump to target position if player lands on bridge" in {
-      val moveSpaces = 6
-      val move       = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
-      val update     = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
+      val game          = Game(Map(pippo -> 0), Board())
+      val initialUpdate = GameUpdate(game, Seq())
+      val moveSpaces    = 6
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 12)
       update.log shouldBe Seq(
         Advance(pippo, game.board.get(0), game.board.get(moveSpaces)),
@@ -143,9 +143,11 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
     }
 
     "move again if player lands on goose" in {
-      val moveSpaces = 5
-      val move       = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
-      val update     = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
+      val game          = Game(Map(pippo -> 0), Board())
+      val initialUpdate = GameUpdate(game, Seq())
+      val moveSpaces    = 5
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 10)
       update.log shouldBe Seq(
         Advance(pippo, game.board.get(0), game.board.get(moveSpaces)),
@@ -155,97 +157,129 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
 
     "handles multiple bridge jumps" in {
       val customBoard   = Board(Seq(Start(0), Bridge(5, 10), Bridge(10, 20), Bridge(20, 40)), 63)
-      val customGame    = game.copy(board = customBoard)
-      val initialUpdate = GameUpdate(customGame, Seq())
+      val game          = Game(Map(pippo -> 0), customBoard)
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
-      val move          = MoveRules.computePlayerMove(customGame.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 40)
       update.log.size shouldBe 4
       update.log shouldBe Seq(
-        Advance(pippo, customGame.board.get(0), customGame.board.get(moveSpaces)),
-        Jump(pippo, customGame.board.get(moveSpaces), customGame.board.get(10)),
-        Jump(pippo, customGame.board.get(10), customGame.board.get(20)),
-        Jump(pippo, customGame.board.get(20), customGame.board.get(40))
+        Advance(pippo, game.board.get(0), game.board.get(moveSpaces)),
+        Jump(pippo, game.board.get(moveSpaces), game.board.get(10)),
+        Jump(pippo, game.board.get(10), game.board.get(20)),
+        Jump(pippo, game.board.get(20), game.board.get(40))
       )
     }
 
     "handles multiple goose jumps" in {
-      val customGame    = game.copy(playerPositions = Map(pippo -> 10))
-      val initialUpdate = GameUpdate(customGame, Seq())
+      val game          = Game(playerPositions = Map(pippo -> 10), Board())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 4
-      val move          = MoveRules.computePlayerMove(customGame.board, pippo, 10, moveSpaces)
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 10, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 22)
       update.log.size shouldBe 3
       update.log shouldBe Seq(
-        Advance(pippo, customGame.board.get(10), customGame.board.get(14)),
-        ExtraMove(Advance(pippo, customGame.board.get(14), customGame.board.get(18))),
-        ExtraMove(Advance(pippo, customGame.board.get(18), customGame.board.get(22)))
+        Advance(pippo, game.board.get(10), game.board.get(14)),
+        ExtraMove(Advance(pippo, game.board.get(14), game.board.get(18))),
+        ExtraMove(Advance(pippo, game.board.get(18), game.board.get(22)))
       )
     }
 
     "handles mixed bridge and goose jumps" in {
       val customBoard   = Board(Seq(Start(0), Bridge(5, 20), Goose(20), Bridge(25, 40)), 63)
-      val customGame    = game.copy(board = customBoard)
-      val initialUpdate = GameUpdate(customGame, Seq())
+      val game          = Game(Map(pippo -> 0), customBoard)
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
-      val move          = MoveRules.computePlayerMove(customGame.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 40)
       update.log.size shouldBe 4
       update.log shouldBe Seq(
-        Advance(pippo, customGame.board.get(0), customGame.board.get(moveSpaces)),
-        Jump(pippo, customGame.board.get(moveSpaces), customGame.board.get(20)),
-        ExtraMove(Advance(pippo, customGame.board.get(20), customGame.board.get(25))),
-        Jump(pippo, customGame.board.get(25), customGame.board.get(40))
+        Advance(pippo, game.board.get(0), game.board.get(moveSpaces)),
+        Jump(pippo, game.board.get(moveSpaces), game.board.get(20)),
+        ExtraMove(Advance(pippo, game.board.get(20), game.board.get(25))),
+        Jump(pippo, game.board.get(25), game.board.get(40))
       )
     }
 
     "handles bridge jump after bounce" in {
       val customBoard   = Board(Seq(Start(0), Bridge(2, 5)), 6)
-      val customGame    = game.copy(board = customBoard)
-      val initialUpdate = GameUpdate(customGame, Seq())
+      val game          = Game(Map(pippo -> 0), customBoard)
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 10
-      val move          = MoveRules.computePlayerMove(customGame.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 5)
       update.log.size shouldBe 3
       update.log shouldBe Seq(
-        Overshot(pippo, customGame.board.get(0), customGame.board.get(customGame.board.endPosition), moveSpaces - customBoard.endPosition),
-        Bounce(pippo, customGame.board.get(customGame.board.endPosition), customGame.board.get(2)),
-        Jump(pippo, customGame.board.get(2), customGame.board.get(5))
+        Overshot(pippo, game.board.get(0), game.board.get(game.board.endPosition), moveSpaces - customBoard.endPosition),
+        Bounce(pippo, game.board.get(game.board.endPosition), game.board.get(2)),
+        Jump(pippo, game.board.get(2), game.board.get(5))
       )
     }
 
     "handles goose jump after bounce" in {
       val customBoard   = Board(Seq(Start(0), Goose(60)), 63)
-      val customGame    = game.copy(playerPositions = Map(pippo -> 62), board = customBoard)
-      val initialUpdate = GameUpdate(customGame, Seq())
+      val game          = Game(playerPositions = Map(pippo -> 62), board = customBoard)
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 4
-      val move          = MoveRules.computePlayerMove(customGame.board, pippo, 62, moveSpaces)
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 62, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 62)
       update.log.size shouldBe 4
       update.log shouldBe Seq(
-        Overshot(pippo, customGame.board.get(62), customGame.board.get(customGame.board.endPosition), 3),
-        Bounce(pippo, customGame.board.get(customGame.board.endPosition), customGame.board.get(60)),
-        ExtraMove(Overshot(pippo, customGame.board.get(60), customGame.board.get(customGame.board.endPosition), 1)),
-        Bounce(pippo, customGame.board.get(customGame.board.endPosition), customGame.board.get(62)),
+        Overshot(pippo, game.board.get(62), game.board.get(game.board.endPosition), 3),
+        Bounce(pippo, game.board.get(game.board.endPosition), game.board.get(60)),
+        ExtraMove(Overshot(pippo, game.board.get(60), game.board.get(game.board.endPosition), 1)),
+        Bounce(pippo, game.board.get(game.board.endPosition), game.board.get(62)),
       )
     }
 
     "stops extra moves in case of infinite loops" in {
       val customBoard   = Board(Seq(Start(0), Goose(10)), 15)
-      val customGame    = game.copy(board = customBoard)
-      val initialUpdate = GameUpdate(customGame, Seq())
+      val game          = Game(Map(pippo -> 0), customBoard)
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 10
-      val move          = MoveRules.computePlayerMove(customGame.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 10)
       update.log.size shouldBe 1
       update.log shouldBe Seq(
-        Advance(pippo, customGame.board.get(0), customGame.board.get(moveSpaces))
+        Advance(pippo, game.board.get(0), game.board.get(moveSpaces))
+      )
+    }
+
+    "move the pranked player to the bridge if the collision happened after jump" in {
+      val customBoard   = Board(Seq(Start(0), Bridge(10, 15)), 20)
+      val game          = Game(playerPositions = Map(pippo -> 0, pluto -> 15), board = customBoard)
+      val initialUpdate = GameUpdate(game, Seq())
+      val moveSpaces    = 10
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
+      update.game.playerPositions shouldBe Map(pippo -> 15, pluto -> 10)
+      update.log.size shouldBe 3
+      update.log shouldBe Seq(
+        Advance(pippo, game.board.get(0), game.board.get(moveSpaces)),
+        Jump(pippo, game.board.get(moveSpaces), game.board.get(15)),
+        Return(pluto, game.board.get(15), game.board.get(10))
+      )
+    }
+
+    "move the pranked player to the goose if the collision happened after extra move" in {
+      val customBoard   = Board(Seq(Start(0), Goose(5)), 20)
+      val game          = Game(playerPositions = Map(pippo -> 0, pluto -> 10), board = customBoard)
+      val initialUpdate = GameUpdate(game, Seq())
+      val moveSpaces    = 5
+      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
+      update.game.playerPositions shouldBe Map(pippo -> 10, pluto -> 5)
+      update.log.size shouldBe 3
+      update.log shouldBe Seq(
+        Advance(pippo, game.board.get(0), game.board.get(moveSpaces)),
+        ExtraMove(Advance(pippo, game.board.get(moveSpaces), game.board.get(10))),
+        Return(pluto, game.board.get(10), game.board.get(5))
       )
     }
   }
