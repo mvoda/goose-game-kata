@@ -8,9 +8,13 @@ import scala.annotation.tailrec
 object MoveRules {
   private type PlayerPosition = (Player, Int)
 
-  def movePlayer(game: Game, player: Player, spaces: Int): Either[GameError, GameUpdate] = {
-    if (game.playerPositions.contains(player)) Left(PlayerDoesNotExistsError(player))
-    else Right(process(game, player, spaces))
+  def movePlayer(game: Game, player: Player, spaces: Int): GameUpdate = {
+    if (game.playerPositions.contains(player)) {
+      val message = PlayerDoesNotExist(player)
+      GameUpdate(game, Seq(message))
+    } else {
+      process(game, player, spaces)
+    }
   }
 
   def process(game: Game, player: Player, spaces: Int): GameUpdate = {
