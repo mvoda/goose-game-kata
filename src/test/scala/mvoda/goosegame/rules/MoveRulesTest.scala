@@ -60,6 +60,18 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
       update.game.winner shouldBe Some(move.player)
     }
 
+    "not detect winning condition when a player overshoots the end" in {
+      val move   = Overshot(pippo, EmptySpace(53), EmptySpace(63), 3)
+      val update = MoveRules.updateGame(initialUpdate, move)
+      update.game.winner shouldBe None
+    }
+
+    "detect winning condition when a player reaches the end as a result of a return move" in {
+      val move   = Return(pippo, EmptySpace(53), EmptySpace(63))
+      val update = MoveRules.updateGame(initialUpdate, move)
+      update.game.winner shouldBe Some(move.player)
+    }
+
     "ignore moves if game finished" in {
       val initialUpdate = GameUpdate(game.copy(winner = Some(pippo)), Seq())
       val move          = Advance(pippo, EmptySpace(53), EmptySpace(55))
@@ -76,14 +88,30 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
       val move   = Advance(pippo, EmptySpace(53), EmptySpace(game.playerPositions(pluto)))
       val update = MoveRules.processMove(initialUpdate, move)
       update.game.playerPositions shouldBe Map(pippo -> 55, pluto -> 53)
-      update.log.size shouldBe 2
+      update.log shouldBe Seq(
+        move,
+        Return(pluto, game.board.get(55), game.board.get(53))
+      )
     }
 
     "update just the player position and log the move in case of no collision" in {
       val move   = Advance(pippo, EmptySpace(53), EmptySpace(60))
       val update = MoveRules.processMove(initialUpdate, move)
       update.game.playerPositions shouldBe Map(pippo -> 60, pluto -> 55)
-      update.log.size shouldBe 1
+      update.log shouldBe Seq(move)
+    }
+
+    "detect end of the game after a swap places the player on the end space" in {
+      val game          = Game(Map(pippo -> 63, pluto -> 60), board)
+      val initialUpdate = GameUpdate(game, Seq())
+      val move          = Bounce(pippo, EmptySpace(63), EmptySpace(60))
+      val update        = MoveRules.processMove(initialUpdate, move)
+      update.game.playerPositions shouldBe Map(pippo -> 60, pluto -> 63)
+      update.game.winner shouldBe Some(pluto)
+      update.log shouldBe Seq(
+        move,
+        Return(pluto, game.board.get(60), game.board.get(63))
+      )
     }
   }
 
