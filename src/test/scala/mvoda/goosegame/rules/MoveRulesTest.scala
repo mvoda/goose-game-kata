@@ -321,6 +321,32 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val result        = MoveRules.movePlayer(game, Move(missingPlayer, 3, 3))
       result.left.value shouldBe PlayerDoesNotExist(missingPlayer)
     }
+
+    "log winner after a forward move" in {
+      val game   = Game(Map(pippo -> 61), Board())
+      val result = MoveRules.movePlayer(game, Move(pippo, 1, 1))
+      val update = result.right.value
+      update.game.playerPositions shouldBe Map(pippo -> 63)
+      update.log shouldBe Seq(
+        PlayerRolls(pippo, 1, 1),
+        Advance(pippo, game.board.get(61), game.board.get(63)),
+        PlayerWins(pippo)
+      )
+    }
+
+    "log correct winner after a collision move" in {
+      val game   = Game(Map(pippo -> 61, pluto -> 62), Board())
+      val result = MoveRules.movePlayer(game, Move(pippo, 1, 2))
+      val update = result.right.value
+      update.game.playerPositions shouldBe Map(pippo -> 62, pluto -> 63)
+      update.log shouldBe Seq(
+        PlayerRolls(pippo, 1, 2),
+        Overshot(pippo, game.board.get(61), game.board.get(63), 1),
+        Bounce(pippo, game.board.get(63), game.board.get(62)),
+        Return(pluto, game.board.get(62), game.board.get(63)),
+        PlayerWins(pluto)
+      )
+    }
   }
 
 }
