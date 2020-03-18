@@ -41,15 +41,13 @@ object MoveRules {
         else processMoveChain(gameUpdate, ExtraMove(computedMove), moveSpaces)
 
       case EmptySpace(board.endPosition) =>
-        boardMove match {
+        extractMove(boardMove) match {
           case Overshot(player, _, end, overshotSpaces) =>
-            val nextMove = Bounce(player, end, board.get(end.position - overshotSpaces))
-            processMoveChain(gameUpdate, nextMove, moveSpaces)
-          case ExtraMove(Overshot(player, _, end, overshotSpaces)) =>
             val nextMove = Bounce(player, end, board.get(end.position - overshotSpaces))
             processMoveChain(gameUpdate, nextMove, moveSpaces)
           case _ => gameUpdate
         }
+
       case _ => gameUpdate
     }
   }
@@ -93,11 +91,16 @@ object MoveRules {
     }
   }
 
-  def causesInfiniteLoop(startPosition: Int, moveSpaces: Int, endPosition: Int): Boolean = {
+  private def causesInfiniteLoop(startPosition: Int, moveSpaces: Int, endPosition: Int): Boolean = {
     val nextPosition   = startPosition + moveSpaces
     val overshotSpaces = math.abs(nextPosition - endPosition)
     val finalPosition  = endPosition - overshotSpaces
     finalPosition == startPosition
+  }
+
+  private def extractMove(boardMove: BoardMove): BoardMove = boardMove match {
+    case ExtraMove(move) => move
+    case move            => move
   }
 
 }
