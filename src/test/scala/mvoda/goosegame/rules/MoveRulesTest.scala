@@ -125,7 +125,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
   }
 
   "processMoveChain" should {
-    "bounces back after hitting the end of the board" in {
+    "bounce back after hitting the end of the board" in {
       val game          = Game(Map(pippo -> 0), Board())
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 66
@@ -165,7 +165,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       )
     }
 
-    "handles multiple bridge jumps" in {
+    "handle multiple bridge jumps" in {
       val customBoard   = Board(Seq(Start(0), Bridge(5, 10), Bridge(10, 20), Bridge(20, 40)), 63)
       val game          = Game(Map(pippo -> 0), customBoard)
       val initialUpdate = GameUpdate(game, Seq())
@@ -182,7 +182,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       )
     }
 
-    "handles multiple goose jumps" in {
+    "handle multiple goose jumps" in {
       val game          = Game(playerPositions = Map(pippo -> 10), Board())
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 4
@@ -197,7 +197,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       )
     }
 
-    "handles mixed bridge and goose jumps" in {
+    "handle mixed bridge and goose jumps" in {
       val customBoard   = Board(Seq(Start(0), Bridge(5, 20), Goose(20), Bridge(25, 40)), 63)
       val game          = Game(Map(pippo -> 0), customBoard)
       val initialUpdate = GameUpdate(game, Seq())
@@ -214,7 +214,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       )
     }
 
-    "handles bridge jump after bounce" in {
+    "handle bridge jump after bounce" in {
       val customBoard   = Board(Seq(Start(0), Bridge(2, 5)), 6)
       val game          = Game(Map(pippo -> 0), customBoard)
       val initialUpdate = GameUpdate(game, Seq())
@@ -230,7 +230,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       )
     }
 
-    "handles goose jump after bounce" in {
+    "handle goose jump after bounce" in {
       val customBoard   = Board(Seq(Start(0), Goose(60)), 63)
       val game          = Game(playerPositions = Map(pippo -> 62), board = customBoard)
       val initialUpdate = GameUpdate(game, Seq())
@@ -247,7 +247,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       )
     }
 
-    "stops extra moves in case of infinite loops" in {
+    "stop extra moves in case of infinite loops" in {
       val customBoard   = Board(Seq(Start(0), Goose(10)), 15)
       val game          = Game(Map(pippo -> 0), customBoard)
       val initialUpdate = GameUpdate(game, Seq())
