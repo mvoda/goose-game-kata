@@ -41,6 +41,14 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val prankedPlayerMove = MoveRules.prankedPlayerMove(playerPositions, move)
       prankedPlayerMove shouldBe None
     }
+
+    "return empty in case of collision on start space" in {
+      val playerPositions   = Map(pippo -> 10, pluto -> 0)
+      val move              = Return(pippo, EmptySpace(10), Start(0))
+      val prankedPlayerMove = MoveRules.prankedPlayerMove(playerPositions, move)
+      prankedPlayerMove shouldBe None
+    }
+
   }
 
   "updateGame" should {
