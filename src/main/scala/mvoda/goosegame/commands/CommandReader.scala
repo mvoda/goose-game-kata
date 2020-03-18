@@ -1,6 +1,7 @@
 package mvoda.goosegame.commands
 
-import mvoda.goosegame.{ GameError, InvalidCommand, InvalidMove, Player }
+import mvoda.goosegame.events.{ GameError, InvalidCommand, InvalidMove }
+import mvoda.goosegame.game.Player
 
 import scala.util.Random
 

@@ -1,7 +1,7 @@
 package mvoda.goosegame.rules
 
 import mvoda.goosegame.commands.{ Add, Command, Move }
-import mvoda.goosegame.{ Game, GameUpdate }
+import mvoda.goosegame.game.{ Game, GameUpdate }
 
 object GameRules {
   def applyCommand(game: Game, command: Command): GameUpdate =

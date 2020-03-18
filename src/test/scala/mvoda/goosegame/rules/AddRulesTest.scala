@@ -1,6 +1,7 @@
 package mvoda.goosegame.rules
 
-import mvoda.goosegame._
+import mvoda.goosegame.events.{ ExistingPlayers, PlayerAlreadyExists }
+import mvoda.goosegame.game.{ Board, Game, Player }
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

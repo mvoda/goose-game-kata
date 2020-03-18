@@ -1,4 +1,4 @@
-package mvoda.goosegame
+package mvoda.goosegame.game
 
 case class Board(spaces: Map[Int, BoardSpace], endPosition: Int) {
   def get(position: Int): BoardSpace = spaces(position)

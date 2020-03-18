@@ -1,4 +1,4 @@
-package mvoda.goosegame
+package mvoda.goosegame.events
 
 sealed trait GameError extends Throwable with GameMessage
 

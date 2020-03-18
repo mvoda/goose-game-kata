@@ -1,4 +1,6 @@
-package mvoda.goosegame
+package mvoda.goosegame.events
+
+import mvoda.goosegame.game.Player
 
 trait GameMessage {
   def msg: String

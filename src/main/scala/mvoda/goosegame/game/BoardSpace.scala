@@ -1,4 +1,4 @@
-package mvoda.goosegame
+package mvoda.goosegame.game
 
 sealed trait BoardSpace {
   def position: Int

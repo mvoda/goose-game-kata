@@ -1,6 +1,8 @@
 package mvoda.goosegame.rules
 
-import mvoda.goosegame._
+import mvoda.goosegame
+import mvoda.goosegame.events.{ ExistingPlayers, PlayerAlreadyExists }
+import mvoda.goosegame.game.{ Game, GameUpdate, Player }
 
 object AddRules {
   def addPlayer(game: Game, player: Player): GameUpdate =
@@ -10,6 +12,6 @@ object AddRules {
     } else {
       val newPlayerPositions = game.playerPositions + (player -> 0)
       val update             = ExistingPlayers(newPlayerPositions.keySet)
-      GameUpdate(game.copy(playerPositions = newPlayerPositions), Seq(update))
+      goosegame.game.GameUpdate(game.copy(playerPositions = newPlayerPositions), Seq(update))
     }
 }

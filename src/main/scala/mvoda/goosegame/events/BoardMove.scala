@@ -1,6 +1,6 @@
-package mvoda.goosegame.moves
+package mvoda.goosegame.events
 
-import mvoda.goosegame.{ BoardSpace, GameMessage, Player }
+import mvoda.goosegame.game.{ BoardSpace, Player }
 
 sealed trait BoardMove extends GameMessage {
   def player: Player

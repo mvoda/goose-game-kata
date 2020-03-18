@@ -1,6 +1,6 @@
 package mvoda.goosegame.commands
 
-import mvoda.goosegame.Player
+import mvoda.goosegame.game.Player
 
 sealed trait Command
 

@@ -1,6 +1,7 @@
 package mvoda.goosegame.commands
 
-import mvoda.goosegame._
+import mvoda.goosegame.events.{ InvalidCommand, InvalidMove }
+import mvoda.goosegame.game.Player
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
