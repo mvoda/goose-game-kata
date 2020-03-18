@@ -4,10 +4,11 @@ import mvoda.goosegame
 import mvoda.goosegame.commands.Move
 import mvoda.goosegame.events._
 import mvoda.goosegame.game.{ GameUpdate, _ }
+import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class MoveRulesTest extends AnyWordSpec with Matchers {
+class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
   private val pippo: Player = Player("Pippo")
   private val pluto: Player = Player("Pluto")
 
@@ -306,8 +307,8 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
     val game = Game(Map(pippo -> 0, pluto -> 0), Board())
 
     "apply the move if player exists" in {
-      val update = MoveRules.movePlayer(game, Move(pippo, 1, 1))
-      update.game shouldNot be(game)
+      val result = MoveRules.movePlayer(game, Move(pippo, 1, 1))
+      val update = result.right.value
       update.game.playerPositions shouldBe Map(pippo -> 2, pluto -> 0)
       update.log shouldBe Seq(
         PlayerRolls(pippo, 1, 1),
@@ -317,9 +318,8 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
 
     "not change the game state if player does not exist" in {
       val missingPlayer = Player("whoops")
-      val update        = MoveRules.movePlayer(game, Move(missingPlayer, 3, 3))
-      update.game shouldBe game
-      update.log shouldBe Seq(PlayerDoesNotExist(missingPlayer))
+      val result        = MoveRules.movePlayer(game, Move(missingPlayer, 3, 3))
+      result.left.value shouldBe PlayerDoesNotExist(missingPlayer)
     }
   }
 

@@ -9,14 +9,13 @@ import scala.annotation.tailrec
 
 object MoveRules {
 
-  def movePlayer(game: Game, move: Move): GameUpdate = {
+  def movePlayer(game: Game, move: Move): Either[GameError, GameUpdate] = {
     if (!game.playerPositions.contains(move.player)) {
-      val message = PlayerDoesNotExist(move.player)
-      GameUpdate(game, Seq(message))
+      Left(PlayerDoesNotExist(move.player))
     } else {
-      val moveUpdate  = process(game, move.player, move.spaces)
+      val update      = process(game, move.player, move.spaces)
       val rollMessage = PlayerRolls(move.player, move.firstDice, move.secondDice)
-      moveUpdate.copy(log = rollMessage +: moveUpdate.log)
+      Right(update.copy(log = rollMessage +: update.log))
     }
   }
 

@@ -21,9 +21,9 @@ object Main {
     if (input != quitCommand) {
       val updateEither = for {
         command <- CommandReader.read(input)
-        update = GameRules.applyCommand(game, command)
+        update  <- GameRules.applyCommand(game, command)
       } yield update
-      val gameUpdate = updateEither.fold(error => GameUpdate(game, Seq(error)), commandUpdate => commandUpdate)
+      val gameUpdate = updateEither.fold(error => GameUpdate(game, Seq(error)), identity)
       printLog(gameUpdate.log)
       if (gameUpdate.game.winner.isEmpty) mainLoop(gameUpdate.game)
     }
