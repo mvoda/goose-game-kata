@@ -6,4 +6,6 @@ sealed trait Command
 
 case class Add(player: Player) extends Command
 
-case class Move(player: Player, spaces: Int) extends Command
+case class Move(player: Player, firstDice: Int, secondDice: Int) extends Command {
+  val spaces: Int = firstDice + secondDice
+}
