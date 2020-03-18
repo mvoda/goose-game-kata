@@ -1,6 +1,5 @@
 package mvoda.goosegame.rules
 
-import mvoda.goosegame
 import mvoda.goosegame.commands.Move
 import mvoda.goosegame.events._
 import mvoda.goosegame.game.{ GameUpdate, _ }
@@ -75,7 +74,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
     }
 
     "ignore moves if game finished" in {
-      val initialUpdate = goosegame.game.GameUpdate(game.copy(winner = Some(pippo)), Seq())
+      val initialUpdate = GameUpdate(game.copy(winner = Some(pippo)), Seq())
       val move          = Advance(pippo, EmptySpace(53), EmptySpace(55))
       val update        = MoveRules.updateGame(initialUpdate, move)
       update shouldBe initialUpdate
@@ -84,7 +83,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
 
   "processMove" should {
     val game          = Game(Map(pippo -> 53, pluto -> 55), Board())
-    val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+    val initialUpdate = GameUpdate(game, Seq())
 
     "update both the player and prankedPlayer position and log the moves" in {
       val move   = Advance(pippo, EmptySpace(53), EmptySpace(game.playerPositions(pluto)))
@@ -105,7 +104,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
 
     "detect end of the game after a swap places the player on the end space" in {
       val game          = Game(Map(pippo -> 63, pluto -> 60), Board())
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val move          = Bounce(pippo, EmptySpace(63), EmptySpace(60))
       val update        = MoveRules.processMove(initialUpdate, move)
       update.game.playerPositions shouldBe Map(pippo -> 60, pluto -> 63)
@@ -120,7 +119,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
   "processMoveChain" should {
     "bounces back after hitting the end of the board" in {
       val game          = Game(Map(pippo -> 0), Board())
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 66
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -134,7 +133,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
 
     "jump to target position if player lands on bridge" in {
       val game          = Game(Map(pippo -> 0), Board())
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 6
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -147,7 +146,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
 
     "move again if player lands on goose" in {
       val game          = Game(Map(pippo -> 0), Board())
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -161,7 +160,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
     "handles multiple bridge jumps" in {
       val customBoard   = Board(Seq(Start(0), Bridge(5, 10), Bridge(10, 20), Bridge(20, 40)), 63)
       val game          = Game(Map(pippo -> 0), customBoard)
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -177,7 +176,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
 
     "handles multiple goose jumps" in {
       val game          = Game(playerPositions = Map(pippo -> 10), Board())
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 4
       val move          = MoveRules.computePlayerMove(game.board, pippo, 10, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -193,7 +192,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
     "handles mixed bridge and goose jumps" in {
       val customBoard   = Board(Seq(Start(0), Bridge(5, 20), Goose(20), Bridge(25, 40)), 63)
       val game          = Game(Map(pippo -> 0), customBoard)
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -210,7 +209,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
     "handles bridge jump after bounce" in {
       val customBoard   = Board(Seq(Start(0), Bridge(2, 5)), 6)
       val game          = Game(Map(pippo -> 0), customBoard)
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 10
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -226,7 +225,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
     "handles goose jump after bounce" in {
       val customBoard   = Board(Seq(Start(0), Goose(60)), 63)
       val game          = Game(playerPositions = Map(pippo -> 62), board = customBoard)
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 4
       val move          = MoveRules.computePlayerMove(game.board, pippo, 62, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -243,7 +242,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
     "stops extra moves in case of infinite loops" in {
       val customBoard   = Board(Seq(Start(0), Goose(10)), 15)
       val game          = Game(Map(pippo -> 0), customBoard)
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 10
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -257,7 +256,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
     "move the pranked player to the bridge if the collision happened after jump" in {
       val customBoard   = Board(Seq(Start(0), Bridge(10, 15)), 20)
       val game          = Game(playerPositions = Map(pippo -> 0, pluto -> 15), board = customBoard)
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 10
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
@@ -273,7 +272,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
     "move the pranked player to the goose if the collision happened after extra move" in {
       val customBoard   = Board(Seq(Start(0), Goose(5)), 20)
       val game          = Game(playerPositions = Map(pippo -> 0, pluto -> 10), board = customBoard)
-      val initialUpdate = goosegame.game.GameUpdate(game, Seq())
+      val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
       val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)

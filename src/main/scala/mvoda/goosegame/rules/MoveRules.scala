@@ -1,6 +1,5 @@
 package mvoda.goosegame.rules
 
-import mvoda.goosegame
 import mvoda.goosegame.commands.Move
 import mvoda.goosegame.events._
 import mvoda.goosegame.game.{ GameUpdate, _ }
@@ -24,7 +23,7 @@ object MoveRules {
   def process(game: Game, player: Player, spaces: Int): GameUpdate = {
     val startPosition   = game.playerPositions(player)
     val firstPlayerMove = computePlayerMove(game.board, player, startPosition, spaces)
-    val gameUpdate      = goosegame.game.GameUpdate(game, Seq())
+    val gameUpdate      = GameUpdate(game, Seq())
     processMoveChain(gameUpdate, firstPlayerMove, spaces)
   }
 
