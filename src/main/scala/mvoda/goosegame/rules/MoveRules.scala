@@ -72,8 +72,8 @@ object MoveRules {
     }
   }
 
-  def determineWinner(board: Board, move: BoardMove): Option[Player] = move match {
-    case _: Overshot | ExtraMove(_: Overshot)        => None
+  def determineWinner(board: Board, move: BoardMove): Option[Player] = extractMove(move) match {
+    case _: Overshot                                 => None
     case _ if move.end.position == board.endPosition => Some(move.player)
     case _                                           => None
   }
