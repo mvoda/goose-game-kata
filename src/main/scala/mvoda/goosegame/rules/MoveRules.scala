@@ -11,6 +11,8 @@ object MoveRules {
   def movePlayer(game: Game, move: Move): Either[GameError, GameUpdate] = {
     if (!game.playerPositions.contains(move.player)) {
       Left(PlayerDoesNotExist(move.player))
+    } else if (game.winner.isDefined) {
+      Left(GameEnded(game.winner.get))
     } else {
       val rollMessage     = PlayerRolls(move.player, move.firstDice, move.secondDice)
       val update          = process(game, move.player, move.spaces)
@@ -36,10 +38,9 @@ object MoveRules {
         val nextMove = Jump(boardMove.player, boardMove.end, gameUpdate.game.board.get(toPosition))
         processMoveChain(gameUpdate, nextMove, moveSpaces)
 
-      case Goose(_) =>
-        val computedMove = computePlayerMove(gameUpdate.game.board, boardMove.player, boardMove.end.position, moveSpaces)
-        if (causesInfiniteLoop(boardMove.end.position, moveSpaces, board.endPosition)) gameUpdate
-        else processMoveChain(gameUpdate, ExtraMove(computedMove), moveSpaces)
+      case Goose(_) if !causesInfiniteLoop(boardMove.end.position, moveSpaces, board.endPosition) =>
+        val nextMove = computePlayerMove(gameUpdate.game.board, boardMove.player, boardMove.end.position, moveSpaces)
+        processMoveChain(gameUpdate, ExtraMove(nextMove), moveSpaces)
 
       case EmptySpace(board.endPosition) =>
         extractMove(boardMove) match {
@@ -71,12 +72,6 @@ object MoveRules {
     }
   }
 
-  def determineWinner(board: Board, move: BoardMove): Option[Player] = extractMove(move) match {
-    case _: Overshot                                 => None
-    case _ if move.end.position == board.endPosition => Some(move.player)
-    case _                                           => None
-  }
-
   def prankedPlayerMove(playerPositions: Map[Player, Int], boardMove: BoardMove): Option[BoardMove] = {
     val maybePrankedPlayer = playerPositions.find { case (_, position) => position == boardMove.end.position && position != 0 }.map(_._1)
     maybePrankedPlayer.map(prankedPlayer => Return(prankedPlayer, boardMove.end, boardMove.start))
@@ -90,6 +85,12 @@ object MoveRules {
       val overshotSpaces = nextPosition - board.endPosition
       Overshot(player, board.get(startPosition), board.get(board.endPosition), overshotSpaces)
     }
+  }
+
+  private def determineWinner(board: Board, move: BoardMove): Option[Player] = extractMove(move) match {
+    case _: Overshot                                 => None
+    case _ if move.end.position == board.endPosition => Some(move.player)
+    case _                                           => None
   }
 
   private def causesInfiniteLoop(startPosition: Int, moveSpaces: Int, endPosition: Int): Boolean = {

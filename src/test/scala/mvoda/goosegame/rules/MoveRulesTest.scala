@@ -315,10 +315,16 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       )
     }
 
-    "not change the game state if player does not exist" in {
+    "return error if player does not exist" in {
       val missingPlayer = Player("whoops")
       val result        = MoveRules.movePlayer(game, Move(missingPlayer, 3, 3))
       result.left.value shouldBe PlayerDoesNotExist(missingPlayer)
+    }
+
+    "return error if game has already ended" in {
+      val game   = Game(Map(pippo -> 63), Board(), Some(pippo))
+      val result = MoveRules.movePlayer(game, Move(pippo, 1, 2))
+      result.left.value shouldBe GameEnded(pippo)
     }
 
     "log winner after a forward move" in {

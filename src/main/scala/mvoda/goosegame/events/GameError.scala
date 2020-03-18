@@ -19,3 +19,7 @@ case class PlayerAlreadyExists(player: Player) extends GameError {
 case class PlayerDoesNotExist(player: Player) extends GameError {
   override val msg: String = s"$player: does not exist."
 }
+
+case class GameEnded(player: Player) extends GameError {
+  override val msg: String = s"Game has already ended. $player won!!"
+}

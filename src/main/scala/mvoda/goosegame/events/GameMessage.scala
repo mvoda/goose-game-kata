@@ -15,5 +15,5 @@ case class PlayerRolls(player: Player, firstDice: Int, secondDice: Int) extends 
 }
 
 case class PlayerWins(player: Player) extends GameMessage {
-  override val msg: String = s"$player Wins!!"
+  override val msg: String = s"$player wins!!"
 }
