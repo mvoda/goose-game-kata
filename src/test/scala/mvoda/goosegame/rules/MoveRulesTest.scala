@@ -11,53 +11,53 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
   private val pippo: Player = Player("Pippo")
   private val pluto: Player = Player("Pluto")
 
-  "computePlayerMove" should {
+  "computeForwardMove" should {
     "calculate final position when player does not hit the end of the board" in {
-      val move = MoveRules.computePlayerMove(Board(), pippo, 0, 10)
+      val move = MoveRules.computeForwardMove(Board(), pippo, 0, 10)
       move shouldBe an[Advance]
       move.start.position shouldBe 0
       move.end.position shouldBe 10
     }
 
     "calculate final position when player does hits the end of the board" in {
-      val move = MoveRules.computePlayerMove(Board(), pippo, 55, 10)
+      val move = MoveRules.computeForwardMove(Board(), pippo, 55, 10)
       move shouldBe an[Overshot]
       move.start.position shouldBe 55
       move.end.position shouldBe 63
     }
   }
 
-  "prankedPlayerMove" should {
+  "findPrankedPlayerMove" should {
     val playerPositions = Map(pippo -> 10, pluto -> 15)
 
     "return pranked player to the other player's starting position" in {
       val move              = Advance(pippo, EmptySpace(10), EmptySpace(15))
-      val prankedPlayerMove = MoveRules.prankedPlayerMove(playerPositions, move)
+      val prankedPlayerMove = MoveRules.findPrankedPlayerMove(playerPositions, move)
       prankedPlayerMove shouldBe Some(Return(pluto, move.end, move.start))
     }
 
     "return empty in case of not player collision" in {
       val move              = Advance(pippo, EmptySpace(10), EmptySpace(11))
-      val prankedPlayerMove = MoveRules.prankedPlayerMove(playerPositions, move)
+      val prankedPlayerMove = MoveRules.findPrankedPlayerMove(playerPositions, move)
       prankedPlayerMove shouldBe None
     }
 
     "return empty in case of collision on start space" in {
       val playerPositions   = Map(pippo -> 10, pluto -> 0)
       val move              = Return(pippo, EmptySpace(10), Start(0))
-      val prankedPlayerMove = MoveRules.prankedPlayerMove(playerPositions, move)
+      val prankedPlayerMove = MoveRules.findPrankedPlayerMove(playerPositions, move)
       prankedPlayerMove shouldBe None
     }
 
   }
 
-  "updateGame" should {
+  "applyMoveOnBoard" should {
     val game          = Game(Map(pippo -> 53), Board())
     val initialUpdate = GameUpdate(game, Seq())
 
     "update player positions and log moves" in {
       val move   = Advance(pippo, EmptySpace(53), EmptySpace(55))
-      val update = MoveRules.updateGame(initialUpdate, move)
+      val update = MoveRules.applyMoveOnBoard(initialUpdate, move)
       update.game.playerPositions(pippo) shouldBe move.end.position
       update.log.head shouldBe move
       update.game.winner shouldBe None
@@ -65,37 +65,37 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
 
     "detect winning condition when a player reaches the end" in {
       val move   = Advance(pippo, EmptySpace(53), EmptySpace(63))
-      val update = MoveRules.updateGame(initialUpdate, move)
+      val update = MoveRules.applyMoveOnBoard(initialUpdate, move)
       update.game.winner shouldBe Some(move.player)
     }
 
     "not detect winning condition when a player overshoots the end" in {
       val move   = Overshot(pippo, EmptySpace(53), EmptySpace(63), 3)
-      val update = MoveRules.updateGame(initialUpdate, move)
+      val update = MoveRules.applyMoveOnBoard(initialUpdate, move)
       update.game.winner shouldBe None
     }
 
     "detect winning condition when a player reaches the end as a result of a return move" in {
       val move   = Return(pippo, EmptySpace(53), EmptySpace(63))
-      val update = MoveRules.updateGame(initialUpdate, move)
+      val update = MoveRules.applyMoveOnBoard(initialUpdate, move)
       update.game.winner shouldBe Some(move.player)
     }
 
     "ignore moves if game finished" in {
       val initialUpdate = GameUpdate(game.copy(winner = Some(pippo)), Seq())
       val move          = Advance(pippo, EmptySpace(53), EmptySpace(55))
-      val update        = MoveRules.updateGame(initialUpdate, move)
+      val update        = MoveRules.applyMoveOnBoard(initialUpdate, move)
       update shouldBe initialUpdate
     }
   }
 
-  "processMove" should {
+  "movePlayerAndPrankedPlayer" should {
     val game          = Game(Map(pippo -> 53, pluto -> 55), Board())
     val initialUpdate = GameUpdate(game, Seq())
 
     "update both the player and prankedPlayer position and log the moves" in {
       val move   = Advance(pippo, EmptySpace(53), EmptySpace(game.playerPositions(pluto)))
-      val update = MoveRules.processMove(initialUpdate, move)
+      val update = MoveRules.movePlayerAndPrankedPlayer(initialUpdate, move)
       update.game.playerPositions shouldBe Map(pippo -> 55, pluto -> 53)
       update.log shouldBe Seq(
         move,
@@ -105,7 +105,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
 
     "update just the player position and log the move in case of no collision" in {
       val move   = Advance(pippo, EmptySpace(53), EmptySpace(60))
-      val update = MoveRules.processMove(initialUpdate, move)
+      val update = MoveRules.movePlayerAndPrankedPlayer(initialUpdate, move)
       update.game.playerPositions shouldBe Map(pippo -> 60, pluto -> 55)
       update.log shouldBe Seq(move)
     }
@@ -114,7 +114,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(Map(pippo -> 63, pluto -> 60), Board())
       val initialUpdate = GameUpdate(game, Seq())
       val move          = Bounce(pippo, EmptySpace(63), EmptySpace(60))
-      val update        = MoveRules.processMove(initialUpdate, move)
+      val update        = MoveRules.movePlayerAndPrankedPlayer(initialUpdate, move)
       update.game.playerPositions shouldBe Map(pippo -> 60, pluto -> 63)
       update.game.winner shouldBe Some(pluto)
       update.log shouldBe Seq(
@@ -129,7 +129,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(Map(pippo -> 0), Board())
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 66
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 60)
       update.log.size shouldBe 2
@@ -143,7 +143,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(Map(pippo -> 0), Board())
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 6
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 12)
       update.log shouldBe Seq(
@@ -156,7 +156,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(Map(pippo -> 0), Board())
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 10)
       update.log shouldBe Seq(
@@ -170,7 +170,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(Map(pippo -> 0), customBoard)
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 40)
       update.log.size shouldBe 4
@@ -186,7 +186,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(playerPositions = Map(pippo -> 10), Board())
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 4
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 10, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 10, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 22)
       update.log.size shouldBe 3
@@ -202,7 +202,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(Map(pippo -> 0), customBoard)
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 40)
       update.log.size shouldBe 4
@@ -219,7 +219,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(Map(pippo -> 0), customBoard)
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 10
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 5)
       update.log.size shouldBe 3
@@ -235,7 +235,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(playerPositions = Map(pippo -> 62), board = customBoard)
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 4
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 62, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 62, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 62)
       update.log.size shouldBe 4
@@ -252,7 +252,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(Map(pippo -> 0), customBoard)
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 10
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 10)
       update.log.size shouldBe 1
@@ -266,7 +266,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(playerPositions = Map(pippo -> 0, pluto -> 15), board = customBoard)
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 10
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 15, pluto -> 10)
       update.log.size shouldBe 3
@@ -282,7 +282,7 @@ class MoveRulesTest extends AnyWordSpec with Matchers with EitherValues {
       val game          = Game(playerPositions = Map(pippo -> 0, pluto -> 10), board = customBoard)
       val initialUpdate = GameUpdate(game, Seq())
       val moveSpaces    = 5
-      val move          = MoveRules.computePlayerMove(game.board, pippo, 0, moveSpaces)
+      val move          = MoveRules.computeForwardMove(game.board, pippo, 0, moveSpaces)
       val update        = MoveRules.processMoveChain(initialUpdate, move, moveSpaces)
       update.game.playerPositions shouldBe Map(pippo -> 10, pluto -> 5)
       update.log.size shouldBe 3

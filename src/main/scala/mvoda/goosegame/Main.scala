@@ -15,6 +15,10 @@ object Main {
     mainLoop(Game())
   }
 
+  /**
+    * Main game loop, recursively reads keyboard input and applies commands
+    * @param game game state
+    */
   @tailrec
   private def mainLoop(game: Game): Unit = {
     val input = io.StdIn.readLine
