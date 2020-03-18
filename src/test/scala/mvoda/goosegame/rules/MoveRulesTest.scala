@@ -1,6 +1,7 @@
 package mvoda.goosegame.rules
 
 import mvoda.goosegame._
+import mvoda.goosegame.commands.Move
 import mvoda.goosegame.moves._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -297,6 +298,27 @@ class MoveRulesTest extends AnyWordSpec with Matchers {
         Advance(pluto, game.board.get(0), game.board.get(5)),
         ExtraMove(Advance(pluto, game.board.get(5), game.board.get(10)))
       )
+    }
+  }
+
+  "movePlayer" should {
+    val game = Game(Map(pippo -> 0, pluto -> 0), Board())
+
+    "apply the move if player exists" in {
+      val update = MoveRules.movePlayer(game, Move(pippo, 1, 1))
+      update.game shouldNot be(game)
+      update.game.playerPositions shouldBe Map(pippo -> 2, pluto -> 0)
+      update.log shouldBe Seq(
+        PlayerRolls(pippo, 1, 1),
+        Advance(pippo, game.board.get(0), game.board.get(2))
+      )
+    }
+
+    "not change the game state if player does not exist" in {
+      val missingPlayer = Player("whoops")
+      val update        = MoveRules.movePlayer(game, Move(missingPlayer, 3, 3))
+      update.game shouldBe game
+      update.log shouldBe Seq(PlayerDoesNotExist(missingPlayer))
     }
   }
 

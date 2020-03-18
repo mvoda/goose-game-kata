@@ -1,19 +1,21 @@
 package mvoda.goosegame.rules
 
 import mvoda.goosegame._
+import mvoda.goosegame.commands.Move
 import mvoda.goosegame.moves._
 
 import scala.annotation.tailrec
 
 object MoveRules {
-  private type PlayerPosition = (Player, Int)
 
-  def movePlayer(game: Game, player: Player, spaces: Int): GameUpdate = {
-    if (game.playerPositions.contains(player)) {
-      val message = PlayerDoesNotExist(player)
+  def movePlayer(game: Game, move: Move): GameUpdate = {
+    if (!game.playerPositions.contains(move.player)) {
+      val message = PlayerDoesNotExist(move.player)
       GameUpdate(game, Seq(message))
     } else {
-      process(game, player, spaces)
+      val moveUpdate  = process(game, move.player, move.spaces)
+      val rollMessage = PlayerRolls(move.player, move.firstDice, move.secondDice)
+      moveUpdate.copy(log = rollMessage +: moveUpdate.log)
     }
   }
 
