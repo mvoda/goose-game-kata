@@ -13,9 +13,11 @@ object MoveRules {
     if (!game.playerPositions.contains(move.player)) {
       Left(PlayerDoesNotExist(move.player))
     } else {
-      val update      = process(game, move.player, move.spaces)
-      val rollMessage = PlayerRolls(move.player, move.firstDice, move.secondDice)
-      Right(update.copy(log = rollMessage +: update.log))
+      val rollMessage     = PlayerRolls(move.player, move.firstDice, move.secondDice)
+      val update          = process(game, move.player, move.spaces)
+      val maybeWinMessage = update.game.winner.map(PlayerWins)
+      val newLog          = (rollMessage +: update.log) ++ maybeWinMessage.toSeq
+      Right(update.copy(log = newLog))
     }
   }
 

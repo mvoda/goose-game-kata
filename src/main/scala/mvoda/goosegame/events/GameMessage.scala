@@ -13,3 +13,7 @@ case class ExistingPlayers(playerSet: Set[Player]) extends GameMessage {
 case class PlayerRolls(player: Player, firstDice: Int, secondDice: Int) extends GameMessage {
   override val msg: String = s"$player rolls $firstDice, $secondDice."
 }
+
+case class PlayerWins(player: Player) extends GameMessage {
+  override val msg: String = s"$player Wins!!"
+}
