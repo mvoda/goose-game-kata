@@ -9,8 +9,8 @@
 
 **Notes:**
 
-Implementation supports custom board layouts (where for example, a player could land on a Goose or Bridge after bouncing from the End of the board). However, it is based on the following assumptions:
- - a Goose space **always** causes the player to move forward (e.g. towards the End of the board). Thus, bouncing back from the End of the board and landing on a Goose space will cause the player to move again towards the End of the board. Depending on board layout and the dice values, this could result in an ifinite loop. If such a case is detected, the player will End the turn in its position on the Goose space.
+Implementation supports custom board layouts (where, for example, a player could land on a Goose or Bridge after bouncing from the End of the board). However, it is based on the following assumptions:
+ - a Goose space **always** causes the player to move forward (e.g. towards the End of the board). Thus, bouncing back from the End of the board and landing on a Goose space will cause the player to move again towards the End of the board. Depending on board layout and the dice values, this could result in an infinite loop. If such a case is detected, the player will End the turn in its position on the Goose space.
  - the Board layouts used will be big enough such that a player moving back after bouncing from the End of the board will not move past the Start position. There is no logic to handle cases where a player would have to bounce back from the start of the board.
 
 
